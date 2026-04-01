@@ -5,7 +5,7 @@
 
 ## 前提条件
 
-- 硬件已接线完成（参考 `hardware/BOM.md` 和 `hardware/wiring.md`）
+- 硬件已接线完成（参考 `hardware/BOM.md` 和 `hardware/3d-model/`）
 - RDK X5 已刷好官方 Ubuntu 22.04 系统
 - 有网络连接
 - 当前用户是 root（或有 sudo 权限）

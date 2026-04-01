@@ -56,7 +56,11 @@ RDK550P-MOSS/
 ├── README.md                # 项目介绍
 ├── LICENSE                  # MIT
 ├── hardware/
-│   └── BOM.md               # 物料清单 + 接线说明
+│   ├── BOM.md               # 物料清单 + 接线说明
+│   └── 3d-model/            # SolidWorks 2024 外壳+云台模型
+│       ├── RDK550W装配体.SLDASM
+│       ├── 标准件/           # 舵机、舵盘参考模型
+│       └── 零件库/           # 3D 打印零件 (P00~P12 + 支座)
 ├── voice-assistant/         # 语音助手（核心）
 │   ├── voice_assistant.py   # 主程序
 │   ├── speaker_id.py        # 声纹识别
