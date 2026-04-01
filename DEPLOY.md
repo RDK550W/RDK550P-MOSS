@@ -189,9 +189,7 @@ python3 enroll_speaker.py 你的名字
 
 ## 故障排查
 
-部署过程中遇到问题，参考：
-- `docs/troubleshooting.md` — 常见坑和解决方案
-- `docs/knowledge-base.md` — 技术知识库（参数参考、API 用法、BPU 模型清单等）
+部署过程中遇到问题，参考 `docs/troubleshooting.md`。最常见的坑：
 
 1. **VAD 不触发** → 检查 ALSA AGC 是否开启：`amixer -c 0 contents | grep -A2 'Auto Gain'`
 2. **TTS 播放后录音异常** → USB 音频模块全双工问题，确认 voice_assistant.py 是最新版本

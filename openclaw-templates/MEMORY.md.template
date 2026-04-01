@@ -1,0 +1,105 @@
+# MEMORY.md - Long-Term Memory
+
+## 平台信息
+- Platform: D-Robotics RDK X5 (aarch64, Ubuntu, Python 3.10.12)
+- Peripherals: USB 音频模块 (麦克风+扬声器一体, card 0: UACDemoV1.0), ES8326 板载音频 (card 1), 2x 数字舵机 (PWM), 1x MIPI 摄像头 (IMX477)
+
+## 能力备忘
+
+### 拍照
+- MIPI 摄像头用 `hobot_vio` 的 `libsrcampy.Camera` 拍照，不是 V4L2
+- 快速拍照命令：`python3 scripts/snap.py [输出路径]`
+- 默认输出到 `media/snapshot.jpg`
+- 输出 NV12 → OpenCV 转 BGR → JPEG
+- 设备节点：`/dev/vin0_cap` ~ `/dev/vin3_cap`
+
+### 语音交互
+- edge-tts 已安装，默认声音 zh-CN-YunxiNeural
+- 流程：edge-tts → ffmpeg 转 wav → aplay -D plughw:0,0
+
+### 语音助手系统
+- 主程序：`voice-assistant/voice_assistant.py`
+- 技术栈：sherpa-onnx 1.12.30 + Silero VAD + SenseVoice ASR
+- 唤醒词通过 ASR 文本匹配实现（非专用 KWS 模型，更灵活）
+- 流程：ALSA 采集 → VAD 检测语音段 → SenseVoice 识别 → 匹配唤醒词 → 录指令 → OpenClaw Agent 处理 → edge-tts 播放回复
+- OpenClaw 集成：`openclaw agent --session-id <id> -m <text> --timeout 120`
+- 模型文件：
+  - `models/silero_vad.onnx` (629K)
+  - `models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/model.int8.onnx` (229M)
+- 声纹识别：已集成 3dspeaker eres2net 模型
+- **ALSA 麦克风关键配置（必须遵守）**：
+  - USB 麦克风必须开启 AGC：`amixer -c 0 set 'Auto Gain Control' on`
+  - 麦克风增益拉满：`amixer -c 0 set 'Mic' 147`
+  - AGC 关闭会导致采集信号太弱，VAD 无法检测语音
+  - amixer 设置重启可能丢失，需持久化（alsactl store 或 systemd ExecStartPre）
+  - 静音过滤阈值 max_abs < 0.05（配合 AGC 使用）
+
+### 舵机控制
+- PWM 控制通过 sysfs：写 duty_cycle 到 `/sys/class/pwm/pwmchip0/pwmN/duty_cycle`
+- **舵机控制黄金法则（永远遵守）：**
+  - **必须用 Python 控制，禁止用 shell 脚本** — shell 每步 fork bc/sleep 进程开销导致卡顿
+  - **必须用余弦缓动（cosine ease-in-out）** — `(1 - cos(t * pi)) / 2`，起停加速度连续
+  - **每个动作至少 12~25 步插值** — 步数少于 10 会有明显顿挫感
+  - **禁止匀速硬切** — 任何移动都要 ease-in-out，没有例外
+  - 总行程: yaw ±300000ns (中心1500000), pitch ±200000ns
+  - 单个动作 duration 参考: 短动作 0.1~0.18s, 长行程 0.2~0.3s
+  - speed 倍率 1.4~1.8 范围手感最好，可逐轮加速增加节奏感
+  - 禁止单步跳变超过 300000ns 或无 delay 连续写入
+  - **标准实现: scripts/dance.py** — 所有新动作都参考这个文件的 move_eased() 函数
+- 跳舞动作组合：左右摇摆(yaw) + 点头(pitch) + 鞠躬
+
+### 音乐同步舞蹈编排
+- **节奏分析流程**：
+  - 用 Python wave + struct 读取音频（不依赖 librosa）
+  - 计算能量包络和 onset 检测找强拍
+  - 自相关方法检测 BPM 和节拍周期
+  - 生成完整节拍时间线（beat timestamps）
+- **同步技术要点**：
+  - 多线程启动：音乐播放（subprocess）和舞蹈动作（独立线程）同时开始
+  - 用 `time.monotonic()` 做精确计时，避免累积误差
+  - `wait_beat(n)` 函数：等到第 n 拍的精确时刻再执行动作
+  - 动作时长要考虑缓动插值的实际耗时，提前结束以卡准下一拍
+- **编舞设计原则**：
+  - 按音乐段落分段设计（前奏/主歌/副歌/高潮）
+  - 每段用不同动作组合体现节奏变化
+  - 强拍用大幅度动作（转身/甩头），弱拍用小律动（点头/晃动）
+  - 高潮段加快速度和动作密度
+- **参考实现**：`scripts/dance_jntm.py`
+
+### OpenClaw CLI
+- `openclaw agent -m "msg" --session-id <id> --timeout <s>` — 发消息给 agent 拿回复
+- `openclaw agent --json` — JSON 格式输出
+- `openclaw message send` — 发消息到外部渠道
+
+### 说话人分离 (Speaker Diarization)
+- 模块：`voice-assistant/speaker_diarization.py`
+- 模型：pyannote segmentation 3.0 (~7MB) + 3dspeaker eres2net (embedding 复用声纹识别)
+- API：`SpeakerDiarizer.process()` 返回分段，`process_and_extract()` 加声纹匹配，`segments_to_text()` 加逐段 ASR
+- 完整流程已验证：录音 → 说话人分离 → 声纹识别 → 逐段 ASR
+- 是离线处理，非实时流式，RDK X5 可跑
+
+### BPU 模型资产
+- 路径：`/opt/hobot/model/x5/basic/` + `/opt/tros/humble/lib/*/config/`
+- 目标检测：YOLOv2/v3/v5s/v8/v10/v11m/v12n, FCOS, CenterNet, SSD MobileNetV1
+- 实例分割：YOLOv8 seg
+- 语义分割：DeepLabV3+, FastSCNN, MobileNet UNet, STDC
+- 分类：MobileNetV1/V2, EfficientNet Lite 0~4, EfficientNASNet, ResNet18, GoogLeNet
+- 特殊：YOLO World, DOSOD (开放词汇检测), CLIP, EdgeSAM, MobileSAM
+- 全部已转 BIN 格式，用 hobot-dnn (3.0.1) 推理
+
+## 教训
+- 不要轻易说"我没有这个能力"——先查文档、试一试再下结论
+- GitHub 下载在这台机器上很慢（~700KB/s），大模型文件要有耐心或用镜像
+- sherpa-onnx 的 OfflineRecognizer 要用工厂方法 `from_sense_voice()` 而不是直接传 config
+- sherpa-onnx KWS 专用模型（zipformer transducer）下载太慢，改用 VAD+ASR 文本匹配方案更实际
+- pyaudio 在这台机器上装不了（无 portaudio19-dev），用 arecord subprocess 方案替代
+- pip 镜像用清华源：`https://pypi.tuna.tsinghua.edu.cn/simple`
+- 后台任务超时会被 SIGTERM 杀掉，长时间下载要注意 timeout 设置
+- **舵机/PWM 精细控制必须用 Python，不要用 shell** — shell 每步 fork 进程的开销会导致动作卡顿
+- **USB 麦克风必须开 AGC** — AGC 关闭时采集信号极弱（max ~0.03~0.09），VAD 完全失效
+- **排查音频问题的正确顺序**：1) 先查 ALSA mixer 设置 2) 再测直接采集 3) 最后才看代码逻辑
+- **amixer 设置不会自动持久化** — 重启后可能丢失，需要 alsactl store 或 systemd ExecStartPre
+- **sherpa_onnx.Alsa 不可靠，已弃用** — 在 RDK X5 + USB 麦克风环境下间歇性返回固定值/陈旧数据，改用 arecord subprocess
+- **USB 音频模块不能同时录音+播放** — arecord 和 aplay 同时打开 plughw 会导致 capture 数据损坏，必须在播放前停录音、播放完再恢复
+- **ALSA 设备竞争是隐蔽 bug** — 不会报错，数据看起来正常但全是无效固定值
+- **sherpa_onnx API 版本兼容性** — `OfflineSpeakerDiarizationResult` 在 1.12.30 不能直接迭代，需调 `result.sort_by_start_time()` 返回 list

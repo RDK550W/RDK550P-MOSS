@@ -82,6 +82,7 @@ RDK550P-MOSS/
 │   ├── setup_pwm.sh         # PWM 舵机初始化
 │   └── requirements.txt     # Python 依赖
 ├── openclaw-templates/      # OpenClaw 配置模板
+│   ├── MEMORY.md.template   # 出厂记忆（技术经验、参数、踩坑教训）
 │   ├── SOUL.md.template     # 机器人性格
 │   ├── USER.md.template     # 主人信息
 │   ├── IDENTITY.md.template # 机器人身份
@@ -99,7 +100,6 @@ RDK550P-MOSS/
 │   └── rdk-x5-gpio-tutorial.md
 └── docs/
     ├── architecture.md      # 系统架构
-    ├── knowledge-base.md    # 技术知识库（开发经验、参数参考、BPU 模型清单）
     └── troubleshooting.md   # 踩坑指南
 ```
 
