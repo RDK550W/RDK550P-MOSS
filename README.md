@@ -67,7 +67,7 @@ RDK550P-MOSS/
 │   ├── speaker_diarization.py  # 说话人分离
 │   ├── enroll_speaker.py    # 声纹注册
 │   ├── start.sh             # 启动脚本
-│   ├── sounds/              # 音效
+│   ├── *.wav                # 音效文件（ding/dong/wake 等）
 │   └── models/              # AI 模型 (gitignored, 由脚本下载)
 ├── scripts/                 # 工具脚本
 │   ├── dance.py             # 舵机舞蹈（含 move_eased 标准实现）

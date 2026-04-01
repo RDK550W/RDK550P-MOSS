@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Minimal MIPI camera capture test for RDK X5"""
 
+import os
 import numpy as np
 import cv2
 
@@ -25,7 +26,7 @@ img_data = cam.get_img(2, WIDTH, HEIGHT)
 if img_data is not None:
     nv12 = np.frombuffer(img_data, dtype=np.uint8).reshape(HEIGHT * 3 // 2, WIDTH)
     bgr = cv2.cvtColor(nv12, cv2.COLOR_YUV2BGR_NV12)
-    out_path = "/root/.openclaw/workspace/capture.jpg"
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "media", "capture_test.jpg")
     cv2.imwrite(out_path, bgr)
     print(f"Saved to {out_path} ({bgr.shape[1]}x{bgr.shape[0]})")
 else:

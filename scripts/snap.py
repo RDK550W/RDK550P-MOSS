@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Quick MIPI camera snapshot. Usage: snap.py [output.jpg]"""
-import sys, numpy as np, cv2
+import sys, os, numpy as np, cv2
 
 try:
     from hobot_vio import libsrcampy as srcampy
 except ImportError:
     from hobot_vio_rdkx5 import libsrcampy as srcampy
 
-out = sys.argv[1] if len(sys.argv) > 1 else "/root/.openclaw/workspace/media/snapshot.jpg"
+DEFAULT_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "media", "snapshot.jpg")
+out = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_OUT
 cam = srcampy.Camera()
 cam.open_cam(0, -1, -1, [1920], [1080], 1080, 1920)
 nv12 = cam.get_img(2, 1920, 1080)

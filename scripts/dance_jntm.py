@@ -23,7 +23,7 @@ C = CENTER
 
 BPM = 130.4
 BEAT = 60.0 / BPM
-MUSIC = "/root/.openclaw/workspace/media/jntm_real.wav"
+MUSIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "media", "jntm_real.wav")
 
 def init_pwm():
     for ch in (0, 1):

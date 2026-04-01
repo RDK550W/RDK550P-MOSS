@@ -68,15 +68,14 @@ bash "$SCRIPT_DIR/setup_pwm.sh"
 info "部署文件到 OpenClaw workspace..."
 WORK_DIR="/root/.openclaw/workspace"
 mkdir -p "$WORK_DIR/voice-assistant/models"
-mkdir -p "$WORK_DIR/voice-assistant/sounds"
 mkdir -p "$WORK_DIR/scripts"
 mkdir -p "$WORK_DIR/media"
 mkdir -p "$WORK_DIR/memory"
 
-# 复制语音助手
+# 复制语音助手（代码 + 音效）
 cp "$VOICE_DIR"/*.py "$WORK_DIR/voice-assistant/"
+cp "$VOICE_DIR"/*.wav "$WORK_DIR/voice-assistant/" 2>/dev/null || true
 cp "$VOICE_DIR/start.sh" "$WORK_DIR/voice-assistant/"
-cp "$VOICE_DIR/sounds/"* "$WORK_DIR/voice-assistant/sounds/" 2>/dev/null || true
 
 # 复制工具脚本
 cp "$SCRIPTS_DIR"/*.py "$WORK_DIR/scripts/"
