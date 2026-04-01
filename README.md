@@ -99,6 +99,7 @@ RDK550P-MOSS/
 │   └── rdk-x5-gpio-tutorial.md
 └── docs/
     ├── architecture.md      # 系统架构
+    ├── knowledge-base.md    # 技术知识库（开发经验、参数参考、BPU 模型清单）
     └── troubleshooting.md   # 踩坑指南
 ```
 
