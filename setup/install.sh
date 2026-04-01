@@ -4,9 +4,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-VOICE_DIR="$PROJECT_DIR/software/voice-assistant"
-SCRIPTS_DIR="$PROJECT_DIR/software/scripts"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+VOICE_DIR="$PROJECT_DIR/voice-assistant"
+SCRIPTS_DIR="$PROJECT_DIR/scripts"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -57,15 +57,15 @@ info "下载 AI 模型 (~2.2GB)..."
 bash "$SCRIPT_DIR/download_models.sh"
 
 # --- 4. 配置 ALSA ---
-info "配置 ALSA 音频..."
+info "配置 ALSA 音频（USB 麦克风+扬声器一体模块）..."
 bash "$SCRIPT_DIR/setup_alsa.sh"
 
 # --- 5. 配置 PWM ---
 info "配置 PWM 舵机..."
 bash "$SCRIPT_DIR/setup_pwm.sh"
 
-# --- 6. 创建工作目录 ---
-info "创建工作目录..."
+# --- 6. 创建工作目录并部署文件 ---
+info "部署文件到 OpenClaw workspace..."
 WORK_DIR="/root/.openclaw/workspace"
 mkdir -p "$WORK_DIR/voice-assistant/models"
 mkdir -p "$WORK_DIR/voice-assistant/sounds"
@@ -74,15 +74,15 @@ mkdir -p "$WORK_DIR/media"
 mkdir -p "$WORK_DIR/memory"
 
 # 复制语音助手
-cp -r "$VOICE_DIR"/*.py "$WORK_DIR/voice-assistant/"
-cp -r "$VOICE_DIR/start.sh" "$WORK_DIR/voice-assistant/"
-cp -r "$VOICE_DIR/sounds/"* "$WORK_DIR/voice-assistant/sounds/" 2>/dev/null || true
+cp "$VOICE_DIR"/*.py "$WORK_DIR/voice-assistant/"
+cp "$VOICE_DIR/start.sh" "$WORK_DIR/voice-assistant/"
+cp "$VOICE_DIR/sounds/"* "$WORK_DIR/voice-assistant/sounds/" 2>/dev/null || true
 
-# 复制脚本
-cp -r "$SCRIPTS_DIR"/*.py "$WORK_DIR/scripts/"
+# 复制工具脚本
+cp "$SCRIPTS_DIR"/*.py "$WORK_DIR/scripts/"
 
 # 链接模型（避免重复占用空间）
-MODEL_SRC="$PROJECT_DIR/software/voice-assistant/models"
+MODEL_SRC="$VOICE_DIR/models"
 MODEL_DST="$WORK_DIR/voice-assistant/models"
 if [ -d "$MODEL_SRC/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" ]; then
     ln -sf "$MODEL_SRC/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" "$MODEL_DST/"
@@ -90,20 +90,23 @@ fi
 for f in silero_vad.onnx 3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx; do
     [ -f "$MODEL_SRC/$f" ] && ln -sf "$MODEL_SRC/$f" "$MODEL_DST/$f"
 done
+if [ -d "$MODEL_SRC/sherpa-onnx-pyannote-segmentation-3-0" ]; then
+    ln -sf "$MODEL_SRC/sherpa-onnx-pyannote-segmentation-3-0" "$MODEL_DST/"
+fi
 
 # 创建空的声纹数据库
 echo '{}' > "$WORK_DIR/voice-assistant/speaker_db.json"
 echo '{}' > "$WORK_DIR/voice-assistant/unknown_speakers.json"
 
 # --- 7. 复制 OpenClaw 配置模板 ---
-info "准备 OpenClaw 配置模板..."
-OPENCLAW_TEMPLATES="$PROJECT_DIR/software/openclaw"
-if [ -d "$OPENCLAW_TEMPLATES" ]; then
-    for tmpl in "$OPENCLAW_TEMPLATES"/*.template; do
+info "部署 OpenClaw 配置模板..."
+TEMPLATES_DIR="$PROJECT_DIR/openclaw-templates"
+if [ -d "$TEMPLATES_DIR" ]; then
+    for tmpl in "$TEMPLATES_DIR"/*.template; do
         base=$(basename "$tmpl" .template)
         if [ ! -f "$WORK_DIR/$base" ]; then
             cp "$tmpl" "$WORK_DIR/$base"
-            info "  已创建 $base（从模板）"
+            info "  已创建 $base"
         else
             warn "  $base 已存在，跳过"
         fi
@@ -112,10 +115,7 @@ fi
 
 # --- 8. 安装 systemd 服务 ---
 info "安装 systemd 服务..."
-SYSTEMD_SRC="$PROJECT_DIR/software/systemd"
-
-# 语音助手服务
-cp "$SYSTEMD_SRC/voice-assistant.service" /etc/systemd/system/
+cp "$PROJECT_DIR/systemd/voice-assistant.service" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable voice-assistant
 info "  voice-assistant.service 已安装并启用"

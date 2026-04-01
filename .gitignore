@@ -1,10 +1,10 @@
-# AI 模型文件（太大，用 download_models.sh 下载）
-software/voice-assistant/models/
+# AI 模型文件（太大，用 setup/download_models.sh 下载）
+voice-assistant/models/
 
 # 声纹数据库（个人数据）
-software/voice-assistant/speaker_db.json
-software/voice-assistant/unknown_speakers.json
-software/voice-assistant/session_state.json
+voice-assistant/speaker_db.json
+voice-assistant/unknown_speakers.json
+voice-assistant/session_state.json
 
 # Python 缓存
 __pycache__/
@@ -21,7 +21,6 @@ media/
 
 # 备份
 backups/
-*.bak.*
 
 # OpenClaw workspace 运行时文件
 memory/

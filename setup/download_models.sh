@@ -3,7 +3,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MODEL_DIR="$SCRIPT_DIR/../voice-assistant/models"
+MODEL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)/voice-assistant/models"
 mkdir -p "$MODEL_DIR"
 
 GREEN='\033[0;32m'

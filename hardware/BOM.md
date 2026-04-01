@@ -7,7 +7,7 @@
 | 运算平台 | [D-Robotics RDK X5](https://developer.d-robotics.cc/) | 1 | ~¥599 | ARM A55 四核 + 8TOPS BPU |
 | 摄像头 | [IMX477 MIPI 模组](https://detail.tmall.com/item.htm?id=636204625264) | 1 | ~¥100 | 15pin MIPI CSI 排线连接 |
 | 舵机 | PTK7465 数字舵机 | 2 | ~¥30/个 | 一个 Yaw（左右），一个 Pitch（上下） |
-| 麦克风 | [USB 音频模块](https://item.taobao.com/item.htm?id=909788853795) | 1 | ~¥15 | 免驱 UAC，含麦克风和喇叭输出 |
+| USB 音频模块 | [USB 麦克风+扬声器一体模块](https://item.taobao.com/item.htm?id=909788853795) | 1 | ~¥15 | 免驱 UAC，麦克风和扬声器集成在一个模块 |
 | 电源 | 5V/3A USB-C 电源 | 1 | ~¥30 | RDK X5 标准供电 |
 | TF 卡 | 32GB+ Class 10 | 1 | ~¥25 | 系统盘，建议 64GB |
 
@@ -15,7 +15,6 @@
 
 | 组件 | 用途 | 备注 |
 |------|------|------|
-| 外接喇叭 | 更好的音质 | 3.5mm 或 USB 接口 |
 | 散热风扇 | 长时间运行降温 | GPIO 控制或 USB 供电 |
 | 云台支架 | 固定两个舵机 | 3D 打印或购买舵机支架 |
 | 外壳 | 保护 + 美观 | TODO: 3D 打印文件 |
