@@ -25,7 +25,7 @@
 | 摄像头 | IMX477 MIPI 模组 | [购买](https://detail.tmall.com/item.htm?id=636204625264) | MIPI CSI 排线连接 |
 | 舵机 x2 | PTK7465 数字舵机 | — | Yaw（左右）+ Pitch（上下） |
 | USB 音频模块 | USB 麦克风+扬声器一体模块 | [购买](https://item.taobao.com/item.htm?id=909788853795) | 免驱，含麦克风和扬声器 |
-| 云台支架 | 3D 打印 / 舵机支架 | TODO | 固定两个舵机的机械结构 |
+| 云台支架 + 外壳 | SolidWorks 2024 3D 模型 | [`hardware/3d-model/`](hardware/3d-model/) | 含装配体 + 全部零件，3D 打印 |
 | 供电 | 5V/3A USB-C | — | RDK X5 标准供电 |
 
 详细物料清单和接线说明见 [`hardware/BOM.md`](hardware/BOM.md)
