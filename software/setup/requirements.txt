@@ -1,0 +1,7 @@
+# RDK550P-MOSS Python Dependencies
+# Tested on RDK X5 (aarch64, Ubuntu 22.04, Python 3.10)
+
+sherpa-onnx==1.12.30
+edge-tts==7.2.7
+numpy==1.26.4
+opencv-python==4.11.0.86

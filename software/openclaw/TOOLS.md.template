@@ -1,0 +1,32 @@
+# TOOLS.md - 本地工具备忘
+
+技能（Skills）定义工具怎么用。这个文件记录你的环境特有的配置。
+
+## 硬件
+
+### 舵机 (PWM) — 云台
+- pwmchip0/pwm0 → Yaw (左右) — 40pin Pin 32
+- pwmchip0/pwm1 → Pitch (上下) — 40pin Pin 33
+- Period: 20000000ns (50Hz)
+- Duty range: 500000ns (0°) ~ 1500000ns (90° 中心) ~ 2500000ns (180°)
+- Duty 减小 = yaw 向左 / pitch 向下
+- Duty 增大 = yaw 向右 / pitch 向上
+- 舵机控制铁律：
+  - 必须用 Python，禁止 shell
+  - 必须余弦缓动 ease-in-out
+  - 每个动作 12~25 步插值
+  - 安全行程: yaw ±300000ns, pitch ±200000ns
+
+### 音频
+- USB 音频模块（录音+播放）
+- 必须开启 AGC：`amixer -c 0 set 'Auto Gain Control' on`
+- 麦克风增益拉满：`amixer -c 0 set 'Mic' 147`
+
+### 摄像头
+- IMX477 MIPI 模组
+- 通过 hobot_vio 的 libsrcampy.Camera 拍照
+- 快速拍照：`python3 scripts/snap.py [输出路径]`
+
+---
+
+在下面添加你自己的环境笔记：

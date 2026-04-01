@@ -1,0 +1,17 @@
+[Unit]
+Description=Voice Assistant (RDK550P-MOSS)
+After=network.target sound.target
+Wants=openclaw.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/.openclaw/workspace/voice-assistant
+ExecStartPre=/usr/bin/amixer -c 0 set 'Auto Gain Control' on
+ExecStartPre=/usr/bin/amixer -c 0 set 'Mic' 147
+ExecStart=/usr/bin/python3 -u voice_assistant.py
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
